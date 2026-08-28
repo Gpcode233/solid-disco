@@ -1,3 +1,5 @@
+"use client";
+
 import EventHero from "@/components/EventHero";
 import EventDetails from "@/components/EventDetails";
 

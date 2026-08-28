@@ -1,18 +1,15 @@
+"use client";
+
+import React from "react";
 import Link from "next/link";
 import {
   CreditCard,
-  ShieldCheck,
   ArrowRight,
   Info,
 } from "@phosphor-icons/react";
 import PaymentCard from "@/components/PaymentCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { eventConfig } from "@/lib/config";
-
-export const metadata = {
-  title: `Complete Your Payment | ${eventConfig.name}`,
-  description: "Transfer instructions and WhatsApp verification for the Youth Program 2026.",
-};
 
 export default function PaymentPage() {
   const steps = [
