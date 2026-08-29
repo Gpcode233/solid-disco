@@ -15,8 +15,11 @@ export default function Footer() {
           <p className="font-serif font-bold text-neutral-900 text-base">
             {eventConfig.name}
           </p>
-          <p className="text-xs text-neutral-500 mt-1">
-            {eventConfig.date} • {eventConfig.location}
+          <p className="text-xs text-brand font-semibold mt-0.5">
+            {eventConfig.organizer}
+          </p>
+          <p className="text-xs text-neutral-500 mt-0.5">
+            {eventConfig.date} • {eventConfig.locationShort}
           </p>
         </div>
 

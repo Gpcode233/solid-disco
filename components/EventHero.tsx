@@ -27,7 +27,8 @@ export default function EventHero() {
     {
       icon: MapPin,
       label: "Location",
-      value: eventConfig.location,
+      value: eventConfig.locationShort,
+      detail: eventConfig.location,
     },
     {
       icon: Ticket,
@@ -40,6 +41,16 @@ export default function EventHero() {
   return (
     <section className="pt-10 sm:pt-16 pb-12 sm:pb-16 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto text-center">
+        {/* Host / Presenter Notice */}
+        <div className="mb-4">
+          <p className="text-xs uppercase font-bold tracking-widest text-brand">
+            {eventConfig.organizer} Presents
+          </p>
+          <p className="text-xs text-neutral-500 font-medium">
+            {eventConfig.subtitle}
+          </p>
+        </div>
+
         {/* Eyebrow */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-brand-light border border-brand-border text-brand text-xs font-semibold tracking-widest uppercase mb-6">
           <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
@@ -56,24 +67,24 @@ export default function EventHero() {
           «{eventConfig.description}»
         </p>
 
-        {/* Topic Banner */}
-        <div className="bg-neutral-50 border border-neutral-200/80 rounded-2xl p-4 sm:p-5 mb-10 text-center">
-          <span className="text-[11px] sm:text-xs uppercase tracking-widest font-semibold text-brand block mb-1">
-            Official Topic
+        {/* Theme Banner */}
+        <div className="bg-neutral-50 border border-neutral-200/80 rounded-2xl p-5 sm:p-6 mb-10 text-center">
+          <span className="text-[11px] sm:text-xs uppercase tracking-widest font-bold text-brand block mb-1">
+            Official Theme
           </span>
-          <p className="font-serif text-lg sm:text-xl font-bold text-neutral-900">
+          <p className="font-serif text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900">
             {eventConfig.topic}
           </p>
         </div>
 
         {/* Event Key Detail Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-10 text-left">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 text-left">
           {eventDetails.map((item, idx) => {
             const Icon = item.icon;
             return (
               <div
                 key={idx}
-                className="p-4 rounded-xl border border-neutral-100 bg-white hover:border-brand-border transition-colors shadow-sm flex flex-col justify-between"
+                className="p-4 rounded-xl border border-neutral-100 bg-white hover:border-brand-border transition-colors shadow-xs flex flex-col justify-between"
               >
                 <div className="w-8 h-8 rounded-lg bg-brand-light flex items-center justify-center text-brand mb-3">
                   <Icon size={18} weight="duotone" />
@@ -95,6 +106,12 @@ export default function EventHero() {
           })}
         </div>
 
+        {/* Detailed Venue Banner */}
+        <div className="bg-white border border-neutral-100 rounded-xl p-3.5 mb-10 text-xs text-neutral-600 flex items-center justify-center gap-2">
+          <MapPin size={16} className="text-brand shrink-0" weight="fill" />
+          <span><strong>Venue:</strong> {eventConfig.location}</span>
+        </div>
+
         {/* Primary CTA Section */}
         <div className="flex flex-col items-center justify-center gap-3">
           <Link
@@ -111,7 +128,7 @@ export default function EventHero() {
 
           <p className="text-xs text-neutral-500 flex items-center gap-1.5 font-medium">
             <ShieldCheck size={14} className="text-brand" weight="fill" />
-            Payment required before registration
+            Payment of {eventConfig.formattedFee} required before registration
           </p>
         </div>
       </div>

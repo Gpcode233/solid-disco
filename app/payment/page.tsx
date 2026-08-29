@@ -92,10 +92,12 @@ export default function PaymentPage() {
         {/* WhatsApp Call-To-Action */}
         <div className="text-center mb-10">
           <WhatsAppButton className="w-full sm:w-auto text-base py-4 px-8" />
-          <p className="text-xs text-neutral-500 mt-3 flex items-center justify-center gap-1.5 font-medium">
-            <span>Direct WhatsApp line:</span>
+          <div className="text-xs text-neutral-500 mt-3 flex flex-wrap items-center justify-center gap-2 font-medium">
+            <span>Enquiries & Verification lines:</span>
             <span className="font-semibold text-neutral-800">{eventConfig.whatsapp.displayNumber}</span>
-          </p>
+            <span>•</span>
+            <span className="font-semibold text-neutral-800">07069757681</span>
+          </div>
         </div>
 
         {/* Important Notice */}

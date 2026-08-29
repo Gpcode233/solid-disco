@@ -27,7 +27,7 @@ export default function Navbar() {
             {eventConfig.name}
           </span>
           <span className="text-[10px] sm:text-xs tracking-widest uppercase text-neutral-400 font-medium">
-            {eventConfig.location}
+            {eventConfig.locationShort}
           </span>
         </Link>
 
