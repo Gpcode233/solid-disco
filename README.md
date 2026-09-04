@@ -12,14 +12,23 @@ A minimal, mobile-first, editorial registration website built with Next.js (App 
 ## Business Flow
 
 ```
-EVENT INFORMATION → PAY TO REGISTER (₦2,000 to PalmPay) → WHATSAPP VERIFICATION (+234 703 912 1611) → RECEIVE CODE → COMPLETE REGISTRATION FORM
+EVENT INFORMATION → PAY TO REGISTER (₦2,000 to First Bank) → WHATSAPP VERIFICATION (+234 703 912 1611) → RECEIVE CODE → COMPLETE REGISTRATION FORM
 ```
 
-1. **Pay First**: Participant transfers ₦2,000 to PalmPay (`9066091468` | `BASSEY, MANFRED MBANG`).
+1. **Pay First**: Participant transfers ₦2,000 to **FIRST BANK** (`3055319457` | `EDIM USANG USANG`).
 2. **WhatsApp Receipt Submission**: Participant clicks **"I've Paid — Contact Organizer"** to send their payment screenshot via WhatsApp deep link.
-3. **Code Issuance**: Organizer verifies the payment in PalmPay, creates a unique code in Google Sheets (`Codes` tab) with `Status = Available`, and sends it to the participant.
+3. **Code Issuance**: Organizer verifies the payment, creates a unique code in Google Sheets (`Codes` tab) with `Status = Available`, and sends it to the participant.
 4. **Code-Gated Form**: Participant visits `/register`, unlocks the form with their code, and registers for their chosen category (Bible Quiz, Solo/Group Singing, Solo/Group Dance, or General Summit Participant).
 5. **Google Sheets Sync**: The backend atomically records participant info to the `Registrations` tab and updates the code status to `Used`.
+
+---
+
+## Bank Details
+
+- **Bank Name**: FIRST BANK
+- **Account Name**: EDIM USANG USANG
+- **Account Number**: 3055319457
+- **Registration Fee**: ₦2,000
 
 ---
 
@@ -68,6 +77,6 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ```bash
 git add .
-git commit -m "Update event details with Youth Exclusive September 2026 programme, theme, competitions, and fee"
+git commit -m "Update bank details to First Bank, add Censers Church logo, and refine hero section"
 git push origin main
 ```

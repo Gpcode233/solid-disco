@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ArrowRight } from "@phosphor-icons/react";
 import { eventConfig } from "@/lib/config";
@@ -18,17 +19,27 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-neutral-100">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
-        {/* Brand / Title */}
+        {/* Brand / Logo + Title */}
         <Link
           href="/"
-          className="group flex flex-col focus:outline-none"
+          className="group flex items-center gap-2.5 sm:gap-3 focus:outline-none"
         >
-          <span className="font-serif text-lg sm:text-xl font-bold tracking-tight text-brand group-hover:text-neutral-900 transition-colors">
-            {eventConfig.name}
-          </span>
-          <span className="text-[10px] sm:text-xs tracking-widest uppercase text-neutral-400 font-medium">
-            {eventConfig.locationShort}
-          </span>
+          <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border border-brand-border/80 shrink-0 shadow-2xs">
+            <Image
+              src={eventConfig.logo}
+              alt="The Censers Church Inc"
+              fill
+              className="object-cover"
+            />
+          </div>
+          <div className="flex flex-col">
+            <span className="font-serif text-base sm:text-lg font-bold tracking-tight text-brand group-hover:text-neutral-900 transition-colors leading-tight">
+              {eventConfig.name}
+            </span>
+            <span className="text-[10px] sm:text-xs tracking-widest uppercase text-neutral-400 font-medium">
+              {eventConfig.organizer}
+            </span>
+          </div>
         </Link>
 
         {/* Navigation items & CTA */}

@@ -13,11 +13,12 @@ export const eventConfig = {
   locationShort: "Enugu, Nigeria",
   fee: 2000,
   formattedFee: "₦2,000",
+  logo: "/censers-church-logo.jpg",
   
   payment: {
-    bankName: "PALMPAY",
-    accountName: "BASSEY, MANFRED MBANG",
-    accountNumber: "9066091468",
+    bankName: "FIRST BANK",
+    accountName: "EDIM USANG USANG",
+    accountNumber: "3055319457",
   },
 
   whatsapp: {

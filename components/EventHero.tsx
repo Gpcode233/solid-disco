@@ -1,14 +1,12 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import Image from "next/image";
 import {
   Calendar,
   Clock,
   MapPin,
   Ticket,
-  ArrowRight,
-  ShieldCheck,
 } from "@phosphor-icons/react";
 import { eventConfig } from "@/lib/config";
 
@@ -39,14 +37,23 @@ export default function EventHero() {
   ];
 
   return (
-    <section className="pt-10 sm:pt-16 pb-12 sm:pb-16 px-4 sm:px-6">
+    <section className="pt-8 sm:pt-14 pb-12 sm:pb-16 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto text-center">
-        {/* Host / Presenter Notice */}
-        <div className="mb-4">
-          <p className="text-xs uppercase font-bold tracking-widest text-brand">
+        {/* Church Logo & Host / Presenter Section */}
+        <div className="flex flex-col items-center justify-center mb-6">
+          <div className="relative w-20 h-20 sm:w-24 sm:h-24 mb-3 rounded-full overflow-hidden shadow-md border-2 border-brand-border/60 bg-white">
+            <Image
+              src={eventConfig.logo}
+              alt="The Censers Church Inc Logo"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+          <p className="text-xs sm:text-sm uppercase font-bold tracking-widest text-brand">
             {eventConfig.organizer} Presents
           </p>
-          <p className="text-xs text-neutral-500 font-medium">
+          <p className="text-xs text-neutral-500 font-medium max-w-md mt-0.5">
             {eventConfig.subtitle}
           </p>
         </div>
@@ -68,7 +75,7 @@ export default function EventHero() {
         </p>
 
         {/* Theme Banner */}
-        <div className="bg-neutral-50 border border-neutral-200/80 rounded-2xl p-5 sm:p-6 mb-10 text-center">
+        <div className="bg-neutral-50 border border-neutral-200/80 rounded-2xl p-5 sm:p-6 mb-8 text-center">
           <span className="text-[11px] sm:text-xs uppercase tracking-widest font-bold text-brand block mb-1">
             Official Theme
           </span>
@@ -107,29 +114,9 @@ export default function EventHero() {
         </div>
 
         {/* Detailed Venue Banner */}
-        <div className="bg-white border border-neutral-100 rounded-xl p-3.5 mb-10 text-xs text-neutral-600 flex items-center justify-center gap-2">
+        <div className="bg-white border border-neutral-100 rounded-xl p-3.5 text-xs text-neutral-600 flex items-center justify-center gap-2 shadow-2xs">
           <MapPin size={16} className="text-brand shrink-0" weight="fill" />
           <span><strong>Venue:</strong> {eventConfig.location}</span>
-        </div>
-
-        {/* Primary CTA Section */}
-        <div className="flex flex-col items-center justify-center gap-3">
-          <Link
-            href="/payment"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-brand text-white font-medium text-base hover:bg-brand-hover active:bg-brand-active transition-all shadow-md hover:shadow-lg group"
-          >
-            <span>Pay to Register</span>
-            <ArrowRight
-              size={18}
-              weight="bold"
-              className="group-hover:translate-x-1 transition-transform"
-            />
-          </Link>
-
-          <p className="text-xs text-neutral-500 flex items-center gap-1.5 font-medium">
-            <ShieldCheck size={14} className="text-brand" weight="fill" />
-            Payment of {eventConfig.formattedFee} required before registration
-          </p>
         </div>
       </div>
     </section>
