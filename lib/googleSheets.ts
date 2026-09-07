@@ -43,6 +43,15 @@ function cleanEnvValue(val?: string): string {
   return cleaned;
 }
 
+function formatPrivateKey(rawKey?: string): string {
+  let key = cleanEnvValue(rawKey);
+  key = key.replace(/\\n/g, "\n");
+  if (!key.includes("BEGIN PRIVATE KEY") && key.trim()) {
+    key = `-----BEGIN PRIVATE KEY-----\n${key.trim()}\n-----END PRIVATE KEY-----\n`;
+  }
+  return key;
+}
+
 export function getCleanSpreadsheetId(): string {
   let id = cleanEnvValue(process.env.GOOGLE_SHEET_ID);
   if (id.includes("/d/")) {
@@ -62,16 +71,13 @@ function hasGoogleCredentials(): boolean {
 
 function getGoogleSheetsClient() {
   const email = cleanEnvValue(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
-  let privateKey = cleanEnvValue(process.env.GOOGLE_PRIVATE_KEY);
+  const privateKey = formatPrivateKey(process.env.GOOGLE_PRIVATE_KEY);
 
-  // Handle newlines in private key when stored as single line string in environment variables
-  if (privateKey.includes("\\n")) {
-    privateKey = privateKey.replace(/\\n/g, "\n");
-  }
-
-  const auth = new google.auth.JWT({
-    email,
-    key: privateKey,
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
+      client_email: email,
+      private_key: privateKey,
+    },
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 
@@ -100,7 +106,6 @@ async function resolveSheetTabs(sheets: any, spreadsheetId: string): Promise<{ c
     // If Registrations tab doesn't exist, try finding any sheet with 'reg' or use first sheet
     if (!regTab) {
       const fallbackReg = sheetTitles.find((t) => t.toLowerCase().includes("reg")) || sheetTitles[0] || "Sheet1";
-      // Try to create Registrations tab
       try {
         await sheets.spreadsheets.batchUpdate({
           spreadsheetId,
