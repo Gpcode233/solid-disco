@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { google } from "googleapis";
-import { getCleanSpreadsheetId } from "@/lib/googleSheets";
+import { getCleanSpreadsheetId, getCleanClientEmail } from "@/lib/googleSheets";
 
 function cleanEnvValue(val?: string): string {
   if (!val) return "";
@@ -25,7 +25,7 @@ function formatPrivateKey(rawKey?: string): string {
 
 export async function GET() {
   const spreadsheetId = getCleanSpreadsheetId();
-  const clientEmail = cleanEnvValue(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
+  const clientEmail = getCleanClientEmail();
   const privateKeyRaw = cleanEnvValue(process.env.GOOGLE_PRIVATE_KEY);
   const privateKey = formatPrivateKey(privateKeyRaw);
 

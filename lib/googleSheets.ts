@@ -61,16 +61,26 @@ export function getCleanSpreadsheetId(): string {
   return id;
 }
 
+export function getCleanClientEmail(): string {
+  const email =
+    cleanEnvValue(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL) ||
+    cleanEnvValue(process.env.GOOGLE_CLIENT_EMAIL) ||
+    cleanEnvValue(process.env.CLIENT_EMAIL) ||
+    cleanEnvValue(process.env.GOOGLE_SERVICE_ACCOUNT) ||
+    "youth-program@gen-lang-client-0794420466.iam.gserviceaccount.com";
+  return email;
+}
+
 function hasGoogleCredentials(): boolean {
   return Boolean(
     getCleanSpreadsheetId() &&
-      cleanEnvValue(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL) &&
+      getCleanClientEmail() &&
       cleanEnvValue(process.env.GOOGLE_PRIVATE_KEY)
   );
 }
 
 function getGoogleSheetsClient() {
-  const email = cleanEnvValue(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
+  const email = getCleanClientEmail();
   const privateKey = formatPrivateKey(process.env.GOOGLE_PRIVATE_KEY);
 
   const auth = new google.auth.GoogleAuth({
