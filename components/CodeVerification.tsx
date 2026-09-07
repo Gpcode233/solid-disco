@@ -86,9 +86,8 @@ export default function CodeVerification({ onVerified }: CodeVerificationProps) 
                 setCode(e.target.value.toUpperCase());
                 if (errorMessage) setErrorMessage(null);
               }}
-              placeholder="e.g. YIP-847291"
               disabled={isLoading}
-              className="w-full px-4 py-3.5 rounded-xl border border-neutral-300 text-neutral-900 placeholder:text-neutral-400 font-mono text-base tracking-wider focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all disabled:bg-neutral-50"
+              className="w-full px-4 py-3.5 rounded-xl border border-neutral-300 text-neutral-900 font-mono text-base tracking-wider focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all disabled:bg-neutral-50"
               autoFocus
               autoComplete="off"
               spellCheck={false}
