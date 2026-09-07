@@ -31,17 +31,38 @@ const mockStore: MockStore = {
   registrations: [],
 };
 
+function cleanEnvValue(val?: string): string {
+  if (!val) return "";
+  let cleaned = val.trim();
+  if (
+    (cleaned.startsWith('"') && cleaned.endsWith('"')) ||
+    (cleaned.startsWith("'") && cleaned.endsWith("'"))
+  ) {
+    cleaned = cleaned.slice(1, -1).trim();
+  }
+  return cleaned;
+}
+
+export function getCleanSpreadsheetId(): string {
+  let id = cleanEnvValue(process.env.GOOGLE_SHEET_ID);
+  if (id.includes("/d/")) {
+    const match = id.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (match) id = match[1];
+  }
+  return id;
+}
+
 function hasGoogleCredentials(): boolean {
   return Boolean(
-    process.env.GOOGLE_SHEET_ID &&
-      process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
-      process.env.GOOGLE_PRIVATE_KEY
+    getCleanSpreadsheetId() &&
+      cleanEnvValue(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL) &&
+      cleanEnvValue(process.env.GOOGLE_PRIVATE_KEY)
   );
 }
 
 function getGoogleSheetsClient() {
-  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  let privateKey = process.env.GOOGLE_PRIVATE_KEY || "";
+  const email = cleanEnvValue(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
+  let privateKey = cleanEnvValue(process.env.GOOGLE_PRIVATE_KEY);
 
   // Handle newlines in private key when stored as single line string in environment variables
   if (privateKey.includes("\\n")) {
@@ -63,6 +84,104 @@ function getGoogleSheetsClient() {
 export function isStandardOrganizerCode(code: string): boolean {
   const sanitized = sanitizeCode(code);
   return /^YIP-\d{4}$/i.test(sanitized);
+}
+
+/**
+ * Helper to inspect sheet tabs and auto-create Registrations/Codes tabs if needed
+ */
+async function resolveSheetTabs(sheets: any, spreadsheetId: string): Promise<{ codesTab: string; regTab: string }> {
+  try {
+    const meta = await sheets.spreadsheets.get({ spreadsheetId });
+    const sheetTitles: string[] = (meta.data.sheets || []).map((s: any) => s.properties?.title || "");
+
+    let codesTab = sheetTitles.find((t) => t.toLowerCase() === "codes") || "";
+    let regTab = sheetTitles.find((t) => t.toLowerCase() === "registrations" || t.toLowerCase() === "registration") || "";
+
+    // If Registrations tab doesn't exist, try finding any sheet with 'reg' or use first sheet
+    if (!regTab) {
+      const fallbackReg = sheetTitles.find((t) => t.toLowerCase().includes("reg")) || sheetTitles[0] || "Sheet1";
+      // Try to create Registrations tab
+      try {
+        await sheets.spreadsheets.batchUpdate({
+          spreadsheetId,
+          requestBody: {
+            requests: [
+              {
+                addSheet: {
+                  properties: { title: "Registrations" },
+                },
+              },
+            ],
+          },
+        });
+        regTab = "Registrations";
+        // Add header row
+        await sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: "Registrations!A1:M1",
+          valueInputOption: "USER_ENTERED",
+          requestBody: {
+            values: [
+              [
+                "Registration Code",
+                "Full Name",
+                "Contact Number",
+                "Email",
+                "State of Origin",
+                "Denomination",
+                "Address",
+                "Sex",
+                "Age Bracket",
+                "Category of Interest",
+                "Suggestions",
+                "Future Contact",
+                "Registration Date",
+              ],
+            ],
+          },
+        });
+      } catch (addErr) {
+        console.warn("[GoogleSheets] Could not create Registrations tab, using fallback:", fallbackReg);
+        regTab = fallbackReg;
+      }
+    }
+
+    // If Codes tab doesn't exist, try creating it
+    if (!codesTab) {
+      try {
+        await sheets.spreadsheets.batchUpdate({
+          spreadsheetId,
+          requestBody: {
+            requests: [
+              {
+                addSheet: {
+                  properties: { title: "Codes" },
+                },
+              },
+            ],
+          },
+        });
+        codesTab = "Codes";
+        // Add header row
+        await sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: "Codes!A1:D1",
+          valueInputOption: "USER_ENTERED",
+          requestBody: {
+            values: [["Registration Code", "Status", "Issued Date", "Used Date"]],
+          },
+        });
+      } catch (addCodesErr) {
+        console.warn("[GoogleSheets] Could not create Codes tab:", addCodesErr);
+        codesTab = "Codes";
+      }
+    }
+
+    return { codesTab, regTab };
+  } catch (err) {
+    console.warn("[GoogleSheets] Error resolving tabs:", err);
+    return { codesTab: "Codes", regTab: "Registrations" };
+  }
 }
 
 /**
@@ -102,7 +221,6 @@ export async function verifyRegistrationCode(rawCode: string): Promise<CodeVerif
       };
     }
 
-    // If matches YIP-XXXX pattern and not yet used in mock store registrations
     if (isOrganizerPattern) {
       const isAlreadyUsed = mockStore.registrations.some(
         (r) => sanitizeCode(r.registrationCode) === code
@@ -130,16 +248,17 @@ export async function verifyRegistrationCode(rawCode: string): Promise<CodeVerif
 
   try {
     const sheets = getGoogleSheetsClient();
-    const spreadsheetId = process.env.GOOGLE_SHEET_ID!;
+    const spreadsheetId = getCleanSpreadsheetId();
+    const { codesTab, regTab } = await resolveSheetTabs(sheets, spreadsheetId);
 
-    // 1. Check Codes sheet (A:D -> Registration Code, Status, Issued Date, Used Date)
+    // 1. Check Codes tab
     let foundInCodes = false;
     let foundStatus = "";
 
     try {
       const codesResponse = await sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: "Codes!A2:D",
+        range: `${codesTab}!A2:D`,
       });
 
       const rows = codesResponse.data.values || [];
@@ -172,11 +291,11 @@ export async function verifyRegistrationCode(rawCode: string): Promise<CodeVerif
       };
     }
 
-    // 2. Check Registrations sheet to confirm whether this code has already been registered
+    // 2. Check Registrations tab to confirm whether this code has already been registered
     try {
       const regResponse = await sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: "Registrations!A2:A",
+        range: `${regTab}!A2:A`,
       });
 
       const regRows = regResponse.data.values || [];
@@ -209,7 +328,6 @@ export async function verifyRegistrationCode(rawCode: string): Promise<CodeVerif
     };
   } catch (error: any) {
     console.error("[GoogleSheets] Error verifying code:", error);
-    // If it's a valid YIP-XXXX pattern, allow graceful pass-through even if sheets API has a transient error
     if (isOrganizerPattern) {
       return {
         success: true,
@@ -268,13 +386,14 @@ export async function submitRegistration(formData: RegistrationFormData): Promis
 
   try {
     const sheets = getGoogleSheetsClient();
-    const spreadsheetId = process.env.GOOGLE_SHEET_ID!;
+    const spreadsheetId = getCleanSpreadsheetId();
+    const { codesTab, regTab } = await resolveSheetTabs(sheets, spreadsheetId);
 
     // 1. Update or Insert code in Codes tab
     try {
       const codesResponse = await sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: "Codes!A2:D",
+        range: `${codesTab}!A2:D`,
       });
 
       const rows = codesResponse.data.values || [];
@@ -288,20 +407,18 @@ export async function submitRegistration(formData: RegistrationFormData): Promis
       }
 
       if (codeRowIndex !== -1) {
-        // Mark code as Used in existing row
         await sheets.spreadsheets.values.update({
           spreadsheetId,
-          range: `Codes!B${codeRowIndex}:D${codeRowIndex}`,
+          range: `${codesTab}!B${codeRowIndex}:D${codeRowIndex}`,
           valueInputOption: "USER_ENTERED",
           requestBody: {
             values: [["Used", rows[codeRowIndex - 2][2] || formattedDate, formattedDate]],
           },
         });
       } else {
-        // Append new row in Codes sheet
         await sheets.spreadsheets.values.append({
           spreadsheetId,
-          range: "Codes!A2:D",
+          range: `${codesTab}!A2:D`,
           valueInputOption: "USER_ENTERED",
           insertDataOption: "INSERT_ROWS",
           requestBody: {
@@ -310,7 +427,7 @@ export async function submitRegistration(formData: RegistrationFormData): Promis
         });
       }
     } catch (codeUpdateErr) {
-      console.warn("[GoogleSheets] Could not update Codes tab:", codeUpdateErr);
+      console.warn("[GoogleSheets] Notice updating Codes tab:", codeUpdateErr);
     }
 
     // 2. Append to Registrations sheet
@@ -331,9 +448,11 @@ export async function submitRegistration(formData: RegistrationFormData): Promis
       formattedDate,
     ];
 
+    console.log(`[GoogleSheets] Appending registration for ${formData.name} to ${regTab}!A2:M`);
+
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: "Registrations!A2:M",
+      range: `${regTab}!A2:M`,
       valueInputOption: "USER_ENTERED",
       insertDataOption: "INSERT_ROWS",
       requestBody: {
@@ -341,6 +460,7 @@ export async function submitRegistration(formData: RegistrationFormData): Promis
       },
     });
 
+    console.log(`[GoogleSheets] Successfully appended registration to Google Sheets.`);
     return { success: true };
   } catch (error: any) {
     console.error("[GoogleSheets] Error saving registration:", error);

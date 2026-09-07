@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: "An unexpected error occurred during submission. Please try again or contact the organizer.",
+        message: error?.message || "An unexpected error occurred during submission. Please try again or contact the organizer.",
       },
       { status: 500 }
     );
